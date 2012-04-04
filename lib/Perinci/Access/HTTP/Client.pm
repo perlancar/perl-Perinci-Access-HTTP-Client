@@ -22,7 +22,6 @@ sub _init {
     #$self->{_cache} = \%cache;
 
     # attributes
-    $self->{url} or die "Please specify url (http/https URL)";
     $self->{retries}         //= 2;
     $self->{retry_delay}     //= 3;
     $self->{lwp_implementor} //= undef;
@@ -37,13 +36,17 @@ sub _init {
     $self->{log_callback}    //= undef;
 }
 
-# send request to Riap server using HTTP
-sub remote_request {
+sub request {
     require LWP::UserAgent;
     require JSON;
 
-    my ($self, $rreq) = @_;
-    $log->tracef("-> http_request(rreq=%s)", $rreq);
+    my ($self, $action, $server_url, $extra) = @_;
+    $log->tracef("=> %s\::request(action=%s, server_url=%s, extra=%s)",
+                 __PACKAGE__, $action, $server_url, $extra);
+    return [400, "Please specify server_url"] unless $server_url;
+    my $rreq = { action=>$action, %{$extra // {}} };
+    my $res = $self->check_request($rreq);
+    return $res if $res;
 
     state $json = JSON->new->allow_nonref;
 
@@ -82,7 +85,7 @@ sub remote_request {
                         $data =~ s/^\[(\w+)\]//;
                         my $method = $1;
                         $method = "error" unless $method ~~ @logging_methods;
-                        $log->$method("[$self->{url} $rreq->{uri}] $data");
+                        $log->$method("[$server_url $rreq->{uri}] $data");
                     }
                     return 1;
                 } elsif ($chunk_type eq 'R') {
@@ -102,9 +105,9 @@ sub remote_request {
     $ua->{__body}     = [];
     $ua->{__in_body}  = 0;
 
-    my $http_req = HTTP::Request->new(POST => $self->{url});
+    my $http_req = HTTP::Request->new(POST => $server_url);
     for (keys %$rreq) {
-        next if /\A(?:args|fmt|loglevel|marklog)\z/;
+        next if /\A(?:args|fmt|loglevel|marklog|_.*)\z/;
         my $hk = "x-riap-$_";
         my $hv = $rreq->{$_};
         if (!defined($hv) || ref($hv)) {
@@ -129,7 +132,7 @@ sub remote_request {
     $http_req->header('Content-Length' => length($args_s));
     $http_req->content($args_s);
 
-    use Data::Dump; dd $http_req;
+    #use Data::Dump; dd $http_req;
 
     my $attempts = 0;
     my $do_retry;
@@ -173,7 +176,6 @@ sub remote_request {
     return [500, "Empty response from server (2)"]
         unless @{$ua->{__body}};
 
-    my $res;
     eval {
         #$log->debugf("body: %s", $ua->{__body});
         $res = $json->decode(join "", @{$ua->{__body}});
@@ -181,7 +183,6 @@ sub remote_request {
     my $eval_err = $@;
     return [500, "Invalid JSON from server: $eval_err"] if $eval_err;
 
-    $log->tracef("<- successful http_request()");
     #use Data::Dump; dd $res;
     $res;
 }
@@ -196,19 +197,21 @@ sub remote_request {
 =head1 SYNOPSIS
 
  use Perinci::Access::HTTP::Client;
- my $pa = Perinci::Access::HTTP::Client->new(
-     url => 'http://localhost:5000/api/');
+ my $pa = Perinci::Access::HTTP::Client->new;
 
  # list all functions in package
- my $res = $pa->request(list => '/Some/Module/', {type=>'function'});
+ my $res = $pa->request(list => 'http://localhost:5000/api/',
+                        {uri=>'/Some/Module/', type=>'function'});
  # -> [200, "OK", ['/Some/Module/mult2', '/Some/Module/mult2']]
 
  # call function
- my $res = $pa->request(call => '/Some/Module/mult2', {args=>{a=>2, b=>3}});
+ my $res = $pa->request(call => 'http://localhost:5000/api/',
+                        {uri=>'/Some/Module/mult2', args=>{a=>2, b=>3}});
  # -> [200, "OK", 6]
 
  # get function metadata
- $res = $pa->request(meta => '/Foo/Bar/multn');
+ $res = $pa->request(meta => 'http://localhost:5000/api/',
+                     {uri=>'/Foo/Bar/multn'});
  # -> [200, "OK", {v=>1.1, summary=>'Multiple many numbers', ...}]
 
 
@@ -226,11 +229,6 @@ This class uses L<Log::Any> for logging.
 Instantiate object. Known attributes:
 
 =over 4
-
-=item * url => STR
-
-Required. HTTP/HTTPS URL of Riap server. It can be the root API URL or some
-branch URL; it doesn't matter.
 
 =item * retries => INT (default 2)
 
@@ -263,11 +261,10 @@ $log->debug(), etc).
 
 =back
 
-=head2 $pa->request($action => $url, \%extra) => $res
+=head2 $pa->request($action => $server_url, \%extra) => $res
 
-Process Riap request and return enveloped result. Note that $url is the HTTP URL
-of Riap server. You will need to specify code entity URI via C<uri> key in
-%extra.
+Send Riap request to $server_url. Note that $server_url is the HTTP URL of Riap
+server. You will need to specify code entity URI via C<uri> key in %extra.
 
 
 =head1 FAQ
