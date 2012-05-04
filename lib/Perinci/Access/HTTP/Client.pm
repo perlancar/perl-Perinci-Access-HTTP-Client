@@ -78,7 +78,7 @@ sub request {
                         $data =~ s/^\[(\w+)\]//;
                         my $method = $1;
                         $method = "error" unless $method ~~ @logging_methods;
-                        $log->$method("[$server_url $rreq->{uri}] $data");
+                        $log->$method("[$server_url] $data");
                     }
                     return 1;
                 } elsif ($chunk_type eq 'R') {
