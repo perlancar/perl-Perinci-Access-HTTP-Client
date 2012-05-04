@@ -12,14 +12,7 @@ use parent qw(Perinci::Access::Base);
 my @logging_methods = Log::Any->logging_methods();
 
 sub _init {
-    #require Tie::Cache;
-
     my ($self) = @_;
-    $self->SUPER::_init();
-
-    # to cache wrapped result
-    #tie my(%cache), 'Tie::Cache', 100;
-    #$self->{_cache} = \%cache;
 
     # attributes
     $self->{retries}         //= 2;
