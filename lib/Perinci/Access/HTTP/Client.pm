@@ -156,10 +156,13 @@ sub request {
             $log->warnf("Network failure (%d - %s), retrying ...",
                         $http0_res->code, $http0_res->message);
             $do_retry++;
-            sleep $self->{retry_delay};
         }
 
-        last unless $do_retry && $attempts++ < $self->{retries};
+        if ($do_retry && $attempts++ < $self->{retries}) {
+            sleep $self->{retry_delay};
+        } else {
+            last;
+        }
     }
 
     return [500, "Network failure: ".$http0_res->code." - ".$http0_res->message]
