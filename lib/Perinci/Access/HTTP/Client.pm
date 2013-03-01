@@ -37,7 +37,9 @@ sub request {
         __PACKAGE__, $action, $server_url, $extra, $copts);
     $copts //= {};
     return [400, "Please specify server_url"] unless $server_url;
-    my $rreq = { action=>$action, %{$extra // {}} };
+    my $rreq = { action=>$action,
+                 ua=>"Perinci/".($Perinci::Access::HTTP::Client::VERSION//"?"),
+                 %{$extra // {}} };
     my $res = $self->check_request($rreq);
     return $res if $res;
 
