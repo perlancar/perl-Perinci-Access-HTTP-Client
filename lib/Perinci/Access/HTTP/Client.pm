@@ -1,6 +1,6 @@
 package Perinci::Access::HTTP::Client;
 
-use 5.010;
+use 5.010001;
 use strict;
 use warnings;
 use Log::Any '$log';
@@ -236,6 +236,8 @@ sub request {
 
 =head1 ATTRIBUTES
 
+=over
+
 =item * realm => STR
 
 For HTTP basic authentication. Defaults to "restricted area" (this is the
@@ -248,6 +250,8 @@ For HTTP basic authentication.
 =item * password => STR
 
 For HTTP basic authentication.
+
+=back
 
 
 =head1 DESCRIPTION
@@ -263,7 +267,7 @@ This class uses L<Log::Any> for logging.
 
 Instantiate object. Known attributes:
 
-=over 4
+=over
 
 =item * retries => INT (default 2)
 
@@ -303,8 +307,6 @@ server. You will need to specify code entity URI via C<uri> key in %extra_keys.
 
 C<%extra_keys> is optional and contains additional Riap request keys (except
  C<action>, which is taken from C<$action>).
-
-=back
 
 
 =head1 FAQ
