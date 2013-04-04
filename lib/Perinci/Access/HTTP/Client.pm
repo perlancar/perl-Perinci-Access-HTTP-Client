@@ -55,7 +55,7 @@ sub request {
         # __mark_log is set then we need to separate each log message
         # and response part. otherwise, everything just needs to go to
         # __body.
-        $log->tracef("got resp: %s (%d bytes)", $data, length($data));
+        #$log->tracef("got resp: %s (%d bytes)", $data, length($data));
 
         if ($ua->{__mark_log}) {
             $ua->{__buffer} .= $data;
