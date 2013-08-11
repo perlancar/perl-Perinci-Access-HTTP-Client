@@ -27,6 +27,8 @@ sub _init {
                             0;
     }
     $self->{log_callback}    //= undef;
+    $self->{user}            //= $ENV{PERINCI_HTTP_USER};
+    $self->{password}        //= $ENV{PERINCI_HTTP_PASSWORD};
 }
 
 sub request {
@@ -251,11 +253,13 @@ default realm used by L<Plack::Middleware::Auth::Basic>).
 
 =item * user => STR
 
-For HTTP basic authentication.
+For HTTP basic authentication. Default will be taken from environment
+C<PERINCI_HTTP_USER>.
 
 =item * password => STR
 
-For HTTP basic authentication.
+For HTTP basic authentication. Default will be taken from environment
+C<PERINCI_HTTP_PASSWORD>.
 
 =back
 
@@ -313,6 +317,13 @@ server. You will need to specify code entity URI via C<uri> key in %extra_keys.
 
 C<%extra_keys> is optional and contains additional Riap request keys (except
  C<action>, which is taken from C<$action>).
+
+
+=head1 ENVIRONMENT
+
+C<PERINCI_HTTP_USER>.
+
+C<PERINCI_HTTP_PASSWORD>.
 
 
 =head1 FAQ
