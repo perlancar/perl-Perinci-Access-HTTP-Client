@@ -214,7 +214,7 @@ sub parse_url {
     require URI;
 
     my ($self, $uri) = @_;
-    return [400, "Please specify url"] unless $uri;
+    die "Please specify url" unless $uri;
     $uri = URI->new($uri) unless blessed($uri);
 
     my $res = $self->request(info => $uri);
