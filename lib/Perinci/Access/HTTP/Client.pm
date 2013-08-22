@@ -13,8 +13,10 @@ use parent qw(Perinci::Access::Base);
 
 my @logging_methods = Log::Any->logging_methods();
 
-sub _init {
-    my ($self) = @_;
+sub new {
+    my $class = shift;
+
+    my $self = $class->SUPER::new(@_);
 
     # attributes
     $self->{retries}         //= 2;
@@ -31,7 +33,12 @@ sub _init {
     $self->{log_callback}    //= undef;
     $self->{user}            //= $ENV{PERINCI_HTTP_USER};
     $self->{password}        //= $ENV{PERINCI_HTTP_PASSWORD};
+
+    $self;
 }
+
+# for older Perinci::Access::Base 0.28-, to remove later
+sub _init {}
 
 sub request {
     my ($self, $action, $server_url, $extra) = @_;
