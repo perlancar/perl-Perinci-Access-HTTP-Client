@@ -124,7 +124,7 @@ sub request {
             "$host:$port",
             $self->{realm} // "restricted area",
             $self->{user},
-            $self->{password}
+            $self->{password},
         );
     }
 
@@ -218,18 +218,19 @@ sub request {
 }
 
 sub parse_url {
-    require URI;
+    require URI::Split;
 
     my ($self, $uri) = @_;
     die "Please specify url" unless $uri;
-    $uri = URI->new($uri) unless blessed($uri);
 
     my $res = $self->request(info => $uri);
     die "Can't 'info' on $uri: $res->[0] - $res->[1]" unless $res->[0] == 200;
 
-    my $resuri = URI->new($res->[2]{uri});
+    my $resuri = $res->[2]{uri};
+    my ($sch, $auth, $path) = URI::Split::uri_split($resuri);
+    $sch //= "pl";
 
-    {proto=>$uri->scheme, path=>$resuri->path};
+    {proto=>$sch, path=>$path};
 }
 
 1;
