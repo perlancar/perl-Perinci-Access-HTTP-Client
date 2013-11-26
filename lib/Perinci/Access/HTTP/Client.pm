@@ -3,6 +3,7 @@ package Perinci::Access::HTTP::Client;
 use 5.010001;
 use strict;
 use warnings;
+use experimental 'smartmatch';
 use Log::Any '$log';
 
 use Scalar::Util qw(blessed);
