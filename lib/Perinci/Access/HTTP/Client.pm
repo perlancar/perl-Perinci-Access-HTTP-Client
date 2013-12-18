@@ -160,7 +160,7 @@ sub request {
 
     my $attempts = 0;
     my $do_retry;
-    my $http0_res;
+    my $http_res;
     while (1) {
         $do_retry = 0;
 
@@ -174,7 +174,7 @@ sub request {
             LWP::Protocol::implementor("http", $imp);
         }
 
-        eval { $http0_res = $ua->request($http_req) };
+        eval { $http_res = $ua->request($http_req) };
         my $eval_err = $@;
 
         if ($old_imp) {
@@ -183,9 +183,9 @@ sub request {
 
         return [500, "Client died: $eval_err"] if $eval_err;
 
-        if ($http0_res->code >= 500) {
+        if ($http_res->code >= 500) {
             $log->warnf("Network failure (%d - %s), retrying ...",
-                        $http0_res->code, $http0_res->message);
+                        $http_res->code, $http_res->message);
             $do_retry++;
         }
 
@@ -196,14 +196,14 @@ sub request {
         }
     }
 
-    return [500, "Network failure: ".$http0_res->code." - ".$http0_res->message]
-        unless $http0_res->is_success;
+    return [500, "Network failure: ".$http_res->code." - ".$http_res->message]
+        unless $http_res->is_success;
 
     # empty __buffer
-    $callback->($http0_res, $ua, undef, "") if length($ua->{__buffer});
+    $callback->($http_res, $ua, undef, "") if length($ua->{__buffer});
 
     return [500, "Empty response from server (1)"]
-        if !length($http0_res->content);
+        if !length($http_res->content);
     return [500, "Empty response from server (2)"]
         unless length($ua->{__body});
 
