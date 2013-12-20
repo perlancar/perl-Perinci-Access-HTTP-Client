@@ -62,11 +62,12 @@ sub request {
     state $callback = sub {
         my ($resp, $ua, $h, $data) = @_;
 
-        # we collect HTTP response body into _buffer first. if
-        # __mark_log is set then we need to separate each log message
-        # and response part. otherwise, everything just needs to go to
-        # __body.
+        # we collect HTTP response body into __buffer first. if __mark_log is
+        # set then we need to separate each log message and response part.
+        # otherwise, everything just needs to go to __body.
+
         #$log->tracef("got resp: %s (%d bytes)", $data, length($data));
+        #say sprintf("D:got resp: %s (%d bytes)", $data, length($data));
 
         if ($ua->{__mark_log}) {
             $ua->{__buffer} .= $data;
@@ -110,11 +111,13 @@ sub request {
         $ua = LWP::UserAgent->new;
         $ua->env_proxy;
         $ua->set_my_handler("response_data", $callback);
+        $ua->set_my_handler(
+            "request_send", sub {
+                my ($req, $ua, $h) = @_;
+                $ua->{__buffer} = "";
+                $ua->{__body} = "";
+            });
     }
-
-    # need to set due to closure?
-    $ua->{__buffer}    = "";
-    $ua->{__body}      = "";
 
     if (defined $self->{user}) {
         require URI;
@@ -208,6 +211,7 @@ sub request {
         unless length($ua->{__body});
 
     eval {
+        #say "D:body=$ua->{__body}";
         $log->tracef("body: %s", $ua->{__body});
         $res = $json->decode($ua->{__body});
     };
