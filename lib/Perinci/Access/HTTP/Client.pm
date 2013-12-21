@@ -110,13 +110,21 @@ sub request {
         require LWP::UserAgent;
         $ua = LWP::UserAgent->new;
         $ua->env_proxy;
-        $ua->set_my_handler("response_data", $callback);
         $ua->set_my_handler(
             "request_send", sub {
                 my ($req, $ua, $h) = @_;
                 $ua->{__buffer} = "";
                 $ua->{__body} = "";
             });
+        $ua->set_my_handler(
+            "response_header", sub {
+                my ($resp, $ua, $h) = @_;
+                my $rlogh = $resp->header('x-riap-logging') // "";
+                $ua->{__mark_log}  = 0 unless $rlogh eq 'marked';
+                $ua->{__log_level} = 0 unless $rlogh;
+            });
+        $ua->set_my_handler(
+            "response_data", $callback);
     }
 
     if (defined $self->{user}) {
@@ -143,9 +151,10 @@ sub request {
         }
         $http_req->header($hk => $hv);
     }
-    $ua->{__mark_log} = $self->{log_level} ? 1:0;
+    $ua->{__log_level} = $self->{log_level};
+    $ua->{__mark_log}  = $self->{log_level} ? 1:0;
     $http_req->header('x-riap-marklog'  => $ua->{__mark_log});
-    $http_req->header('x-riap-loglevel' => $self->{log_level});
+    $http_req->header('x-riap-loglevel' => $ua->{__log_level});
     $http_req->header('x-riap-fmt'      => 'json');
 
     my %args;
