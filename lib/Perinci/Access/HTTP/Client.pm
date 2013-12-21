@@ -69,7 +69,7 @@ sub request {
         #$log->tracef("got resp: %s (%d bytes)", $data, length($data));
         #say sprintf("D:got resp: %s (%d bytes)", $data, length($data));
 
-        if ($ua->{__mark_log}) {
+        if ($ua->{__log_level}) {
             $ua->{__buffer} .= $data;
             if ($ua->{__buffer} =~ /\A([lr])(\d+) /) {
                 my ($chtype, $chlen) = ($1, $2);
@@ -119,9 +119,7 @@ sub request {
         $ua->set_my_handler(
             "response_header", sub {
                 my ($resp, $ua, $h) = @_;
-                my $rlogh = $resp->header('x-riap-logging') // "";
-                $ua->{__mark_log}  = 0 unless $rlogh eq 'marked';
-                $ua->{__log_level} = 0 unless $rlogh;
+                $ua->{__log_level} = 0 unless $resp->header('x-riap-logging');
             });
         $ua->set_my_handler(
             "response_data", $callback);
@@ -142,7 +140,7 @@ sub request {
 
     my $http_req = HTTP::Request->new(POST => $server_url);
     for (keys %$rreq) {
-        next if /\A(?:args|fmt|loglevel|marklog|_.*)\z/;
+        next if /\A(?:args|fmt|loglevel|_.*)\z/;
         my $hk = "x-riap-$_";
         my $hv = $rreq->{$_};
         if (!defined($hv) || ref($hv)) {
@@ -152,8 +150,6 @@ sub request {
         $http_req->header($hk => $hv);
     }
     $ua->{__log_level} = $self->{log_level};
-    $ua->{__mark_log}  = $self->{log_level} ? 1:0;
-    $http_req->header('x-riap-marklog'  => $ua->{__mark_log});
     $http_req->header('x-riap-loglevel' => $ua->{__log_level});
     $http_req->header('x-riap-fmt'      => 'json');
 
