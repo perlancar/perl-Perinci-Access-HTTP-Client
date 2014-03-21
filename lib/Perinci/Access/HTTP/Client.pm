@@ -364,6 +364,14 @@ C<PERINCI_HTTP_PASSWORD>.
 
 =head1 FAQ
 
+=head2 How do I connect to a HTTP server that listens on a Unix socket?
+
+This class can switch to using L<LWP::Protocol::http::SocketUnixAlt> when it
+detects that the server is on a Unix socket, using this syntax (notice the
+single instead of double slash after C<http:>):
+
+ http:/path/to/unix.sock//uri
+
 =head2 How do I connect to an HTTPS server without a "real" SSL certificate?
 
 Since this module is using L<LWP>, you can set environment variable
