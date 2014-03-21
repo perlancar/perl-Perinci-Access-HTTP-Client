@@ -369,6 +369,11 @@ C<PERINCI_HTTP_PASSWORD>.
 
 =head1 FAQ
 
+=head2 How do I connect to an HTTPS server without a "real" SSL certificate?
+
+Set environment variable C<PERL_LWP_SSL_VERIFY_HOSTNAME> to 0. See L<LWP> for
+more details.
+
 
 =head1 TODO
 
