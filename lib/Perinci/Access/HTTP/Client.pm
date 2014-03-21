@@ -175,10 +175,9 @@ sub request {
         my $old_imp;
         if ($self->{lwp_implementor}) {
             my $imp = $self->{lwp_implementor};
-            $imp =~ s!::!/!g; $imp .= ".pm";
+            my $imppm = $imp; $imppm =~ s!::!/!g; $imppm .= ".pm";
             $old_imp = LWP::Protocol::implementor("http");
-            eval "require $imp" or
-                return [500, "Can't load $self->{lwp_implementor}: $@"];
+            eval { require $imppm } or return [500, "Can't load $imp: $@"];
             LWP::Protocol::implementor("http", $imp);
         }
 
