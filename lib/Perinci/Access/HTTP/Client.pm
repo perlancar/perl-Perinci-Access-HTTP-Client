@@ -31,10 +31,10 @@ sub new {
                             0;
     }
     $self->{log_callback}    //= undef;
-    $self->{user}            //= $ENV{PERINCI_HTTP_USER};
-    $self->{password}        //= $ENV{PERINCI_HTTP_PASSWORD};
     $self->{ssl_cert_file}   //= $ENV{SSL_CERT_FILE};
     $self->{ssl_ca_file}     //= $ENV{SSL_CA_FILE};
+    $self->{user}            //= $ENV{PERINCI_HTTP_USER};
+    $self->{password}        //= $ENV{PERINCI_HTTP_PASSWORD};
 
     $self;
 }
@@ -43,14 +43,16 @@ sub new {
 sub _init {}
 
 sub request {
-    my ($self, $action, $server_url, $extra) = @_;
+    my ($self, $action, $server_url, $extra, $copts) = @_;
+    $extra //= {};
+    $copts //= {};
     $log->tracef(
         "=> %s\::request(action=%s, server_url=%s, extra=%s)",
         __PACKAGE__, $action, $server_url, $extra);
     return [400, "Please specify server_url"] unless $server_url;
     my $rreq = { action=>$action,
                  ua=>"Perinci/".($Perinci::Access::HTTP::Client::VERSION//"?"),
-                 %{$extra // {}} };
+                 %$extra };
     my $res = $self->check_request($rreq);
     return $res if $res;
 
@@ -131,7 +133,9 @@ sub request {
             "response_data", $callback);
     }
 
-    if (defined $self->{user}) {
+    my $authuser = $copts->{user}     // $self->{user};
+    my $authpass = $copts->{password} // $self->{password};
+    if (defined $authuser) {
         require URI;
         my $suri = URI->new($server_url);
         my $host = $suri->host;
@@ -139,8 +143,8 @@ sub request {
         $ua->credentials(
             "$host:$port",
             $self->{realm} // "restricted area",
-            $self->{user},
-            $self->{password},
+            $authuser,
+            $authpass,
         );
     }
 
@@ -280,10 +284,14 @@ sub parse_url {
                      {uri=>'/Foo/Bar/multn'});
  # -> [200, "OK", {v=>1.1, summary=>'Multiple many numbers', ...}]
 
- # pass HTTP credentials
+ # pass HTTP credentials (via object attribute)
  my $pa = Perinci::Access::HTTP::Client->new(user => 'admin', password=>'123');
  my $res = $pa->request(call => '...', {...});
  # -> [200, "OK", 'result']
+
+ # HTTP credentials can also be passed on a per-request basis
+ my $pa = Perinci::Access::HTTP::Client->new();
+ my $res = $pa->request(call => '...', {...}, {user=>'admin', password=>'123'});
 
  ## parse server URL
  $res = $pa->parse_url("https://cpanlists.org/api/"); # {proto=>"https", path=>"/App/cpanlists/Server/"}
@@ -361,13 +369,17 @@ $log->debug(), etc).
 
 =back
 
-=head2 $pa->request($action => $server_url, \%extra_keys) => $res
+=head2 $pa->request($action => $server_url, \%extra_keys, \%client_opts) => $res
 
 Send Riap request to $server_url. Note that $server_url is the HTTP URL of Riap
 server. You will need to specify code entity URI via C<uri> key in %extra_keys.
 
 C<%extra_keys> is optional and contains additional Riap request keys (except
- C<action>, which is taken from C<$action>).
+C<action>, which is taken from C<$action>).
+
+C<%client_opts> is optional and contains additional information, like C<user>
+(HTTP authentication user, overrides one in object attribute), C<password> (HTTP
+authentication user, overrides one in object attribute).
 
 =head2 $pa->parse_url($server_url) => HASH
 
