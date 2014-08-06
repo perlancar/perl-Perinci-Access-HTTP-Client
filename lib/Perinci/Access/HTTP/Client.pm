@@ -242,10 +242,10 @@ sub request {
 sub parse_url {
     require URI::Split;
 
-    my ($self, $uri) = @_;
+    my ($self, $uri, $copts) = @_;
     die "Please specify url" unless $uri;
 
-    my $res = $self->request(info => $uri);
+    my $res = $self->request(info => $uri, {}, $copts);
     die "Can't 'info' on $uri: $res->[0] - $res->[1]" unless $res->[0] == 200;
 
     my $resuri = $res->[2]{uri};
@@ -369,7 +369,7 @@ $log->debug(), etc).
 
 =back
 
-=head2 $pa->request($action => $server_url, \%extra_keys, \%client_opts) => $res
+=head2 $pa->request($action => $server_url[, \%extra_keys[, \%client_opts]]) => $res
 
 Send Riap request to $server_url. Note that $server_url is the HTTP URL of Riap
 server. You will need to specify code entity URI via C<uri> key in %extra_keys.
@@ -381,7 +381,7 @@ C<%client_opts> is optional and contains additional information, like C<user>
 (HTTP authentication user, overrides one in object attribute), C<password> (HTTP
 authentication user, overrides one in object attribute).
 
-=head2 $pa->parse_url($server_url) => HASH
+=head2 $pa->parse_url($server_url[, \%client_opts]) => HASH
 
 
 =head1 ENVIRONMENT
