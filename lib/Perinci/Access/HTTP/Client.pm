@@ -6,6 +6,7 @@ use warnings;
 use experimental 'smartmatch';
 use Log::Any '$log';
 
+use Perinci::AccessUtil qw(strip_riap_stuffs_from_res);
 use Scalar::Util qw(blessed);
 
 use parent qw(Perinci::Access::Base);
@@ -240,7 +241,7 @@ sub request {
     return [500, "Invalid JSON from server: $eval_err"] if $eval_err;
 
     #use Data::Dump; dd $res;
-    $res;
+    strip_riap_stuffs_from_res($res);
 }
 
 sub parse_url {
