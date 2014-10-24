@@ -51,7 +51,8 @@ sub request {
         "=> %s\::request(action=%s, server_url=%s, extra=%s)",
         __PACKAGE__, $action, $server_url, $extra);
     return [400, "Please specify server_url"] unless $server_url;
-    my $rreq = { action=>$action,
+    my $rreq = { v=>$self->{riap_version},
+                 action=>$action,
                  ua=>"Perinci/".($Perinci::Access::HTTP::Client::VERSION//"?"),
                  %$extra };
     my $res = $self->check_request($rreq);
