@@ -339,8 +339,6 @@ C<SSL_CA_FILE>.
 
 This class implements L<Riap::HTTP> client.
 
-This class uses L<Log::Any> for logging.
-
 
 =head1 METHODS
 
