@@ -1,5 +1,8 @@
 package Perinci::Access::HTTP::Client;
 
+# DATE
+# VERSION
+
 use 5.010001;
 use strict;
 use warnings;
@@ -10,8 +13,6 @@ use Perinci::AccessUtil qw(strip_riap_stuffs_from_res);
 use Scalar::Util qw(blessed);
 
 use parent qw(Perinci::Access::Base);
-
-# VERSION
 
 my @logging_methods = Log::Any->logging_methods();
 
@@ -411,9 +412,6 @@ single instead of double slash after C<http:>):
 
 Since this module is using L<LWP>, you can set environment variable
 C<PERL_LWP_SSL_VERIFY_HOSTNAME> to 0. See LWP for more details.
-
-
-=head1 TODO
 
 
 =head1 SEE ALSO
