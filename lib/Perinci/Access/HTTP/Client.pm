@@ -7,7 +7,7 @@ use 5.010001;
 use strict;
 use warnings;
 use experimental 'smartmatch';
-use Log::Any::IfLOG '$log';
+use Log::Any '$log';
 
 use Perinci::AccessUtil qw(strip_riap_stuffs_from_res);
 use Scalar::Util qw(blessed);
