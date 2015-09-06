@@ -1,5 +1,14 @@
 Revision history for Perinci-Access-HTTP-Client
 
+0.22    2015-09-06 (PERLANCAR)
+
+	- No functional changes.
+
+	- [dist] Move spec prereqs from RuntimeRequires to
+	  DevelopRecommends to reduce deps but still allow indicating spec
+	  requirement.
+
+
 0.21    2014-10-24 (PERLANCAR)
 
 	- Add attribute: riap_version.
