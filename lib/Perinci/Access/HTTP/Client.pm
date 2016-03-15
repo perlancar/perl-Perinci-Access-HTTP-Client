@@ -60,8 +60,8 @@ sub request {
     return $res if $res;
 
     state $json = do {
-        require JSON;
-        JSON->new->allow_nonref;
+        require JSON::MaybeXS;
+        JSON::MaybeXS->new->allow_nonref;
     };
 
     state $ua;
